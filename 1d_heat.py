@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import matplotlib.pyplot as plt
-import numpy 
+import numpy as np
 import math
 
 """
@@ -12,12 +12,12 @@ Solves 1D heat equation:
 """
 
 
-# Statility criteria for Forward-Time Central Space (FTCS) is CFL <= 0.5
+# Stability criteria for Forward-Time Central Space (FTCS) is CFL <= 0.5
 cfl = 0.05 
 
 # Space variables
 x = 1.0
-nx = 31
+nx = 51
 dx = x/(nx-1)
 
 # Temporal variables
@@ -28,7 +28,7 @@ nt = int((final_time/dt) - 1)
 cfl_new = dt/(dx * dx)  # re-compute CFL number using space and time only
 
 # 2D solution matrix with time as 'y'
-sol = numpy.zeros((nt,nx)) # time and space grid
+sol = np.zeros((nt,nx)) # time and space grid
 
 print "dx = {0} dt = {1}".format(dx, dt)
 
@@ -47,7 +47,7 @@ for t in range(0, nt-1): # time loop
 for i in range(0, nx):
 	print sol[-1,i]
 
-l = range(0,nx)
+l = np.linspace(0, 1, nx)
 
 plt.plot(l, sol[-1,:], linewidth=2, linestyle='--')
 plt.xlabel('Length', fontsize=14)
