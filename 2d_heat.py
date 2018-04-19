@@ -1,4 +1,4 @@
-#!/apps/anaconda2/bin/python
+#!/usr/bin/python
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -32,7 +32,7 @@ dx = x/(nx-1)
 dy = y/(ny-1)
 
 # Temporal variables
-final_time = 0.02
+final_time = 0.05
 dt = (cfl * dx * dx)/(1.001**math.pi) # assume uniform spacing dx = dy
 nt = int((final_time/dt) - 1)
 

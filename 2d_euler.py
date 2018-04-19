@@ -1,4 +1,4 @@
-#!/apps/anaconda2/bin/python
+#!/usr/bin/python
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -12,16 +12,21 @@ THIS IS A WORK IN PROGRESS
 
 
 # Stability criteria for Forward-Time Central Space (FTCS) is CFL <= 0.25 for uniform x,y grid
-cfl = 0.1
+cfl = 0.005
 
 # Space variables
 x = 10.0
 y = 1.0
-nx = 51
-ny = 51
+nx = 1000
+ny = 10
 dx = x/(nx-1)
 dy = y/(ny-1)
 
+tot_time = 0.02
+dt = cfl * 2 * dx
+nt = int((tot_time/dt) - 1)
+
+print "nt = " +str(nt)
 
 PV = np.zeros((nt, nx, ny, 4))
 CSV = np.zeros((nt, nx, ny, 4))
@@ -50,52 +55,51 @@ CSV[0,:,:,1] = PV[0,:,:,0] * PV[0,:,:,1]
 CSV[0,:,:,2] = PV[0,:,:,0] * PV[0,:,:,2]
 CSV[0,:,:,3] = P/(gamma-1) + 0.5*rho*(u*u+v*v)
 
+FX[0,:,:,0] = CSV[0,:,:,1]
+FX[0,:,:,1] = CSV[0,:,:,1] * PV[0,:,:,1] + PV[0,:,:,3]
+FX[0,:,:,2] = CSV[0,:,:,1] * PV[0,:,:,2]
+FX[0,:,:,3] = (CSV[0,:,:,3] + PV[0,:,:,3]) * PV[0,:,:,1]
+
+FY[0,:,:,0] = CSV[0,:,:,2]
+FY[0,:,:,1] = CSV[0,:,:,1] * PV[0,:,:,2]
+FY[0,:,:,2] = CSV[0,:,:,2] * PV[0,:,:,2] + PV[0,:,:,3]
+FY[0,:,:,3] = (CSV[0,:,:,3] + PV[0,:,:,3]) * PV[0,:,:,2]
+# End of set initial condition
+
+# Set boundary condition
+#PV[0,0,:,1] = 100 # u = 100 m/s, update all other affected variables and fluxes
+#CSV[0,0,:,1] = PV[0,0,:,0] * PV[0,0,:,1]
+#CSV[0,0,:,3] = PV[0,0,:,3]/(gamma-1) + 0.5*PV[0,0,:,0]*(PV[0,0,:,1]**2+PV[0,0,:,2]**2)
 
 
 
-
-
-# Temporal variables
-final_time = 0.02
-dt = (cfl * dx * dx)/(1.001**math.pi) # assume uniform spacing dx = dy
-nt = int((final_time/dt) - 1)
-
-cfl_new = dt/(dx * dx)  # re-compute CFL number using space and time only
-
-# 3D solution matrix with time as 'z'
-sol = np.zeros((nt,ny,nx)) # time and space x-y grid
-
-print "dt = {0} dx = {1}  dy = {2}".format(dt, dx, dy)
-
-# Set initial condition
-sol[0,:,:] = 0 # T(0,x,y) = 0      i.e T = 0 @ t = 0, at all x and y locations
-
-# Set bounary conditions
-sol[:,:,0] = 1 # left side boundary condition T(t,j,0) = 1
-sol[:,:,-1] = 0 # right side  boundary condition T(t,j,1) = 0 Note x: 0 -> 1, y: 0-> 1
-sol[:,0,:] = 1 # bottom
-sol[:,-1,:] = 0 # top
-
+#cfl = 0.2
 
 for t in range(0, nt-1): # time loop
 	for j in range(1, ny-1): # space y loop
 		for i in range(1, nx-1): # space x loop
-			sol[t+1,j,i] = sol[t,j,i] + (1 + 0.001 * math.pow(sol[t,j,i], math.pi)) * cfl_new * ((sol[t,j,i+1] - 2*sol[t,j,i] + sol[t,j,i-1]) + (sol[t,j+1,i] - 2*sol[t,j,i] + sol[t,j-1,i]))
+			CSV[t+1,i,j,:] = CSV[t,i,j,:] + cfl * ((FX[t,i-1,j,:] - FX[t,i+1,j,:]) + (FY[t,i,j-1,:] - FY[t,i,j+1,:]))
+
+			#PV[t,i,j,1] = CSV[t,i,j,0]/PV[t,i,j,0]
+
+
+print "dt = {0} dx = {1}  dy = {2}".format(dt, dx, dy)
+
 
 
 # for plotting
-lx = np.linspace(0, 10, nx)
-ly = np.linspace(0, 1, ny)
+lx = np.linspace(0, x, nx)
+ly = np.linspace(0, y, ny)
 
 Y, X = np.meshgrid(ly, lx)
 
 
-contours = plt.contourf(Y, X, sol[-1,:,:],11,cmap='jet')
+contours = plt.contourf(Y, X, PV[-1,:,:,1],11,cmap='jet')
 plt.colorbar(contours)
 plt.clabel(contours, inline=True, fontsize=12, colors='black')
 plt.xlabel('x', fontsize=14)
 plt.ylabel('y', fontsize=14)
-plt.title('2D Heat Equation @ t = {} Seconds'.format(final_time), fontsize=18)
+plt.title('2D Euler @ t = {} Seconds'.format(tot_time), fontsize=18)
 plt.show()
 
 
