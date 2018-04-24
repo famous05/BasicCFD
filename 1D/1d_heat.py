@@ -20,7 +20,7 @@ Boundary conditions:
 
 
 # Stability criteria for Forward-Time Central Space (FTCS) is CFL <= 0.5
-cfl = 0.05 
+cfl = 0.2 
 
 # Space variables
 x = 1.0
@@ -49,10 +49,6 @@ sol[-1] = 0  	# right boundary condition T(t,1) = 0 Note x: 0 -> 1
 for t in range(0, nt-1): # time loop
 	for i in range(1, nx-1): # space loop
 		sol[i] = sol[i] + (1 + 0.001 * math.pow(sol[i], math.pi)) * cfl_new * (sol[i+1] - 2*sol[i] + sol[i-1])
-
-
-for i in range(0, nx):
-	print sol[i]
 
 l = np.linspace(0, 1, nx)
 
