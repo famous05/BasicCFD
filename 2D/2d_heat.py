@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/apps/anaconda2/bin/python
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -39,24 +39,24 @@ nt = int((final_time/dt) - 1)
 cfl_new = dt/(dx * dx)  # re-compute CFL number using space and time only
 
 # 3D solution matrix with time as 'z'
-sol = np.zeros((nt,ny,nx)) # time and space x-y grid
+sol = np.zeros((ny,nx)) # time and space x-y grid
 
 print "dt = {0} dx = {1}  dy = {2}".format(dt, dx, dy)
 
 # Set initial condition
-sol[0,:,:] = 0 # T(0,x,y) = 0      i.e T = 0 @ t = 0, at all x and y locations
+sol[:,:] = 0 # T(0,x,y) = 0      i.e T = 0 @ t = 0, at all x and y locations
 
 # Set bounary conditions
-sol[:,:,0] = 1 # left side boundary condition T(t,j,0) = 1
-sol[:,:,-1] = 0 # right side  boundary condition T(t,j,1) = 0 Note x: 0 -> 1, y: 0-> 1
-sol[:,0,:] = 1 # bottom
-sol[:,-1,:] = 0 # top
+sol[:,0] = 1 # left side boundary condition T(t,j,0) = 1
+sol[:,-1] = 0 # right side  boundary condition T(t,j,1) = 0 Note x: 0 -> 1, y: 0-> 1
+sol[0,:] = 1 # bottom
+sol[-1,:] = 0 # top
 
 
 for t in range(0, nt-1): # time loop
 	for j in range(1, ny-1): # space y loop
 		for i in range(1, nx-1): # space x loop
-			sol[t+1,j,i] = sol[t,j,i] + (1 + 0.001 * math.pow(sol[t,j,i], math.pi)) * cfl_new * ((sol[t,j,i+1] - 2*sol[t,j,i] + sol[t,j,i-1]) + (sol[t,j+1,i] - 2*sol[t,j,i] + sol[t,j-1,i]))
+			sol[j,i] = sol[j,i] + (1 + 0.001 * math.pow(sol[j,i], math.pi)) * cfl_new * ((sol[j,i+1] - 2*sol[j,i] + sol[j,i-1]) + (sol[j+1,i] - 2*sol[j,i] + sol[j-1,i]))
 
 
 # for plotting
@@ -66,7 +66,7 @@ ly = np.linspace(0, 1, ny)
 Y, X = np.meshgrid(ly, lx)
 
 
-contours = plt.contourf(Y, X, sol[-1,:,:],11,cmap='jet')
+contours = plt.contourf(Y, X, sol[:,:],11,cmap='jet')
 plt.colorbar(contours)
 plt.clabel(contours, inline=True, fontsize=12, colors='black')
 plt.xlabel('x', fontsize=14)
